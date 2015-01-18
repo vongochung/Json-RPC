@@ -1,8 +1,8 @@
 package main
 
 import (
-	"NeightBourSocial/Server/config"
-	"NeightBourSocial/Server/user"
+	"Json-RPC/Server/config"
+	"Json-RPC/Server/user"
 	"code.google.com/p/go.net/websocket"
 	"net/http"
 	"net/rpc"

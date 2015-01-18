@@ -105,6 +105,7 @@
 
     // Try making a WebSocket call.
     var socket = this.options.getSocket(this.wsOnMessage);
+    console.log(socket);
     if (socket !== null) {
       this._wsCall(socket, request, successCb, errorCb);
       return null;

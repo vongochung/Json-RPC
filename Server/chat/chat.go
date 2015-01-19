@@ -14,7 +14,7 @@ type Connection struct {
 }
 
 type ManageSocket struct{
-    Connections map[*connection]bool
+    Connections map[*Connection]bool
     Broadcast chan string
 }
 
@@ -48,7 +48,7 @@ func (c *Connection) Send() {
 
 func ChatHandler(ws *websocket.Conn) {
     c := &Connection{send: make(chan string, 1024), ws: ws}
-    manager.connections[c] = true
+    manager.Connections[c] = true
     fmt.Println(len( manager.Connections))
     for {
         go c.Receive()

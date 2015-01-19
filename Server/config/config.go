@@ -14,7 +14,7 @@ func LoadConfiguration(file string) {
 	defaults := map[string]interface{}{
 		"DB_NAME":     "neightbour_social",
 		"DB_USER":     "postgres",
-		"DB_PASSWORD": "postgres",
+		"DB_PASSWORD": "root",
 		"DB_PORT":     5432,
 		"DB_SSL_MODE": "disable",
 		// BcryptCost is used to set the cost in BCrypt hashing
@@ -28,6 +28,7 @@ func LoadConfiguration(file string) {
 		"DB_MAXCONN": 0,
 		// Maximum number of idle database connections, 0 = Infinity or DB_MAXCONN
 		"DB_MAXIDLE": 0,
+		"APP_PORT": 8080,
 	}
 
 	loader := conf.NewLoader()

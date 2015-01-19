@@ -1,14 +1,17 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="scripts/jquery.rpc.js"></script>
-     <script type="text/javascript">
-        var math = new $.JsonRpcClient({
+    <script type="text/javascript" src="scripts/tpl.js"></script>
+    <script type="text/javascript">
+        var user = new $.JsonRpcClient({
             socketUrl: 'ws://127.0.0.1:8080/jsonrpc',
-            onmessage : function(message){
-                var result = JSON.parse(message.data);
+            onmessage : function(result){
+                var results = JSON.parse(result.data);
                 console.log(result.result);
             },
             onopen : function(o){
@@ -18,31 +21,99 @@
                 console.log("closed");
             },
             onerror : function(e){
-                console.log(e);
-            }   
+                console.log("err");
+            },
         });
 
-        function Profile(){
-            math.call(
-                'UserMethod.Profile', [{"ID":"316a743e-49bf-491d-988a-7c60cd227f2d"}]
+        // Load list user 
+        List();
+
+        function create_delete_success(data){
+            List();
+        }
+
+        function err_callback(e){
+            $("#err-message").removeClass('hide');
+            $("#err-message").html(e);
+        }
+
+        function Delete(id){
+            user.call(
+                'UserMethod.DeleteUser', [{"ID":id}], create_delete_success, err_callback
             );
         }
         function Create(){
-            math.call(
-                'UserMethod.CreateUser', []
+            user.call(
+                'UserMethod.CreateUser', [{"Email": $("#email").val(), "Password" : $("#password").val()}], create_delete_success, err_callback
             );
         }
-      
-    
+
+        function List(){
+            user.call(
+                'UserMethod.ListUser', [], displayList, err_callback
+            );
+        }
+
+        function displayList(data){
+            $("#err-message").addClass('hide');
+            $("#t-list").html("");
+            $.each(data, function(i, val) {
+                var html =  tmpl("item_tmpl", {
+                    index:i,
+                    id:val.id,
+                    email: val.email,
+                    password : val.password,
+                    createdAt: val.createdAt
+                });
+                $("#t-list").append(html); 
+            });
+        }
     </script>
-<title>Insert title here</title>
+<title>Demo (Holy)</title>
 </head>
 <body>
+<div class="container">
+    <fieldset>
+        <legend>Demo JSON-RPC</legend>
+        <div class="alert alert-danger hide" role="alert" id="err-message"></div>
+        <form class="form-inline" style="margin-bottom: 10px;">
+            <div class="form-group">
+                <input type="email" name="email" class="form-control" id="email" placeholder="email" />
+            </div>
+            <div class="form-group">
+                <label class="sr-only" for="exampleInputPassword2">Password</label>
+                <input type="password" name="password" class="form-control" id="password" placeholder="password" />
+            </div>
+        </form>
+        <input type="button" class="btn btn-primary" value="Create" onclick='Create()'>
+        <input type="button" class="btn btn-warning" value="List" onclick='List()'>
+    </fieldset>
 
-<fieldset>
-	<legend>Golang JSON-RPC</legend>
-    <input type="button" value="Profile" onclick='Profile()'>
-    <input type="button" value="Create" onclick='Create()'>
-</fieldset>
+    <fieldset>
+        <legend class="text-center">List User</legend>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                    <th>CreatedAt</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="t-list">
+            </tbody>
+        </table>
+    </fieldset>
+</div>
+<script type="text/html" id="item_tmpl">
+<tr>
+    <th scope="row"><%=index%></th>
+    <td><%=email%></td>
+    <td><%=password%></td>
+    <td><%=createdAt%></td>
+    <td><button class="btn btn-danger" onclick='Delete("<%=id%>")'>Delete</button></td>
+</tr>
+</script>
 </body>
 </html>

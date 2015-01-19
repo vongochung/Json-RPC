@@ -105,7 +105,6 @@
 
     // Try making a WebSocket call.
     var socket = this.options.getSocket(this.wsOnMessage);
-    console.log(socket);
     if (socket !== null) {
       this._wsCall(socket, request, successCb, errorCb);
       return null;
@@ -336,12 +335,12 @@
     }
 
     /// @todo Make using the jsonrcp 2.0 check optional, to use this on JSON-RPC 1 backends.
-    if (typeof response === 'object' && response.jsonrpc === '2.0') {
+    if (typeof response === 'object' ) {//&& response.jsonrpc === '2.0'
 
       /// @todo Handle bad response (without id).
 
       // If this is an object with result, it is a response.
-      if ('result' in response && this._wsCallbacks[response.id]) {
+      if ('result' in response && this._wsCallbacks[response.id] && response.error == null) {
         // Get the success callback.
         var successCb = this._wsCallbacks[response.id].successCb;
 
@@ -371,7 +370,6 @@
         return;
       }
     }
-
     // If we get here it's an invalid JSON-RPC response, pass to fallback message handler.
     this.options.onmessage(event);
   };

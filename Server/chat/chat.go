@@ -3,61 +3,30 @@ package chat
 import (
     "code.google.com/p/go.net/websocket"
     "fmt"
+    "Json-RPC/Server/helper"
+    "Json-RPC/Server/manage"
 )
 
-type Connection struct {
-    // The websocket connection.
-    ws *websocket.Conn
-
-    // Buffered channel of outbound messages.
-    send chan string
-}
-
-type ManageSocket struct{
-    Connections map[*Connection]bool
-    Broadcast chan string
-}
-
-var manager = ManageSocket{
-    Broadcast: make(chan string),
-    Connections: make(map[*Connection]bool),
-}
-
-func (c *Connection) Receive() {
-    for {
-        var message string
-        err := websocket.Message.Receive(c.ws, &message)
-        if err != nil {
-            break
-        }
-        //c.send <- message
-        manager.Broadcast <- message
-    }
-    c.ws.Close()
-}
-
-func (c *Connection) Send() {
-    for message := range c.send {
-        err := websocket.Message.Send(c.ws, message)
-        if err != nil {
-            break
-        }
-    }
-    c.ws.Close()
-}
-
 func ChatHandler(ws *websocket.Conn) {
-    c := &Connection{send: make(chan string, 1024), ws: ws}
-    manager.Connections[c] = true
-    fmt.Println(len( manager.Connections))
+    // Create connection
+    cnn := &manager.Connection{Send: make(chan string, 1024), Ws: ws}
+    id, err := manager.GenConnID(ws.Request())
+    helper.PanicIf(err)
+    cnn.ID = id
+
+    // Regist connection
+    manager.DeleteExistConn(cnn.ID)
+    manager.Manage.Channels[0].RegistConn(cnn)
+
+    fmt.Println(len(manager.Manage.Channels[0].Connections))
     for {
-        go c.Receive()
-        go c.Send()
+        go cnn.ReceiveMsg()
+        go cnn.SendMsg()
 
         select{
-        case m := <- manager.Broadcast:
-            for c := range manager.Connections {
-                c.send <- m                
+        case m := <- manager.Manage.Channels[0].Broadcast:
+            for c := range manager.Manage.Channels[0].Connections {
+                c.Send <- m                
             }
         }
     }

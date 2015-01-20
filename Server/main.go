@@ -5,6 +5,7 @@ import (
 	"Json-RPC/Server/user"
 	"Json-RPC/Server/event"
 	"Json-RPC/Server/chat"
+	"Json-RPC/Server/manage"
 	"code.google.com/p/go.net/websocket"
 	"net/http"
 	"net/rpc"
@@ -25,6 +26,11 @@ func main() {
 
 	db := bin.DB()
 	defer db.Close()
+
+	bin.Redis()
+
+	//
+	manager.Init()
 
 	// Regist methods json RPC
 	rpc.Register(&user.UserMethod{db})

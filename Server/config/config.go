@@ -29,6 +29,10 @@ func LoadConfiguration(file string) {
 		// Maximum number of idle database connections, 0 = Infinity or DB_MAXCONN
 		"DB_MAXIDLE": 0,
 		"APP_PORT": 8080,
+		"MEMCACHE_PREFIX":  "social",
+		"MEMCACHE_SERVERS": "127.0.0.1:11211",
+		"REDIS_SERVER": "localhost:6379",
+		"REDIS_DATABASE": "0",
 	}
 
 	loader := conf.NewLoader()
